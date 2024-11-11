@@ -13,21 +13,57 @@
     <!-- Video element for the camera feed -->
     <div id="reader" style="width: 100%; height: 100%;"></div>
     <div id="result"></div>
+    <!-- Audio element for beep sound -->
+    <audio id="beep-sound" src="{% static 'sounds/beep.mp3' %}"></audio>
 
     <script>
         // Initialize the scanner
         const html5QrCode = new Html5Qrcode("reader");
+        let scanningEnabled = true; // Flag to control the delay between scans
 
         // Function to handle the scan result
         function onScanSuccess(decodedText, decodedResult) {
-            // Display the result in the page
-            document.getElementById("result").innerText = `Scanned Code: ${decodedText}`;
-            console.log(`Scan result: ${decodedText}`, decodedResult);
+            if (scanningEnabled) {
+                scanningEnabled = false; // Disable scanning temporarily
+
+                // Display the result on the page
+                document.getElementById("result").innerText = `Scanned Code: ${decodedText}`;
+                console.log(`Scan result: ${decodedText}`, decodedResult);
+
+                // Play the beep sound
+                document.getElementById("beep-sound").play();
+
+                // Send the scanned data to the Django server
+                fetch('/scanner/submit-scan/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'  // CSRF token for Django
+                    },
+                    body: JSON.stringify({ scanned_data: decodedText })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Data sent successfully');
+                        return response.json();
+                    } else {
+                        console.error('Failed to send data');
+                    }
+                })
+                .then(data => {
+                    console.log('Server response:', data);
+                })
+                .catch(error => console.error('Error:', error));
+
+                // Set a delay of 3 seconds before allowing another scan
+                setTimeout(() => {
+                    scanningEnabled = true; // Re-enable scanning
+                }, 3000); // Delay in milliseconds
+            }
         }
 
         // Function to handle errors
         function onScanError(errorMessage) {
-            // Handle scanning error
             console.warn(`Scan error: ${errorMessage}`);
         }
 

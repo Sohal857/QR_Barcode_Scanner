@@ -19,5 +19,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('scanner/', include('scanner.urls')),
+    path('scanner/', include('scanner.urls')),  # Include scanner app URLs
 ]

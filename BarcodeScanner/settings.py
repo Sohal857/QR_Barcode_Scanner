@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import pymysql
+pymysql.install_as_MySQLdb()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -85,6 +88,10 @@ DATABASES = {
         'PASSWORD': '',           # Your MySQL password (empty if not set)
         'HOST': 'localhost',
         'PORT': '3306',
+        'OPTIONS': {
+            'ssl': False,  # Disable SSL if it's not needed
+            # 'ssl_disabled': True,  # Explicitly disable SSL for MySQL
+        },
     }
 }
 
